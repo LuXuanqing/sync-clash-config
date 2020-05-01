@@ -91,7 +91,7 @@ ipython_config.py
 #   install all needed dependencies.
 #Pipfile.lock
 
-# celery beat schedule file
+# celery beat schedule __file
 celerybeat-schedule
 
 # SageMath parsed files
@@ -123,3 +123,11 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# pycharm
+.idea/
+.idea/sync-clash-config.iml
+
+# yaml
+*.yaml
+
