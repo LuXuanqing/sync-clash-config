@@ -126,11 +126,9 @@ dmypy.json
 
 # pycharm
 .idea/
-.idea/sync-clash-config.iml
 
 # yaml
-*.yaml
+yaml/
 
 # logs
 logs/
-.log
