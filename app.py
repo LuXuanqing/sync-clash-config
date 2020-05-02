@@ -15,75 +15,13 @@ if not config_url:
     raise ValueError('can\'t find config url')
 
 
-# TODO 保存为yaml_proxy文件
-
-class YamlFile(object):
-    def __init__(self, path=None):
-        """
-        Args:
-            path (str): yaml文件的路径
-        """
-        self.__path = path
-        self.text = ''
-        # 如果path所指的文件存在，则读取，没有则新建
-        if path:
-            if os.path.exists(path):
-                self.read(path)
-            else:
-                self.save()
-
-    def __repr__(self):
-        return '<YamlFile {}>'.format(self.__path)
-
-    @property
-    def path(self):
-        return self.__path
-
-    def read(self, path: str):
-        """
-        读取yaml文件
-        Args:
-            path (str): 要读取的.yaml文件的路径
-        """
-        self.__path = path
-        with open(path, encoding='UTF-8') as f:
-            self.text = f.read()
-            logger.info('loaded yaml {}'.format(path))
-        return self
-
-    def save(self, path: str = None):
-        """
-        写入yaml文件
-        Args:
-            path (str):
-        """
-        self.__path = path or self.__path
-        with open(self.__path, 'w', encoding='UTF-8') as f:
-            f.write(self.text)
-            logger.info('{} saved: {}'.format(self.__path, self.text))
-
-    def uncomment(self):
-        self.text = self.text.replace('#', '')
-
-    def download(self, url: str):
-        """
-        下载订阅的clash配置文件
-        Args:
-            url (str): 下载配置文件的url
-        """
-        response = requests.get(url)
-        logger.info('downloaded config from {}'.format(url))
-        self.text = response.text
-        logger.debug('downloaded config: {}'.format(self.text))
-
-
 class Config(object):
     def __init__(self, path):
         self.__path = path
         self.__text = ''
         self.dict = {}
         if os.path.exists(path):
-            self.read()
+            self.read_text()
 
     def __repr__(self):
         return '<Config {}>'.format(self.__path)
@@ -93,7 +31,12 @@ class Config(object):
         logger.info('loaded dict from yaml')
         logger.debug('dict: {}'.format(self.dict))
 
-    def read(self):
+    def dump(self):
+        self.__text = yaml.dump(self.dict, allow_unicode=True, sort_keys=False)
+        logger.info('self.__text changed')
+        logger.debug('__text: {}'.format(self.__text))
+
+    def read_text(self):
         with open(self.__path, encoding='UTF-8') as f:
             self.__text = f.read()
             logger.info('read yaml file {}'.format(self.__path))
@@ -107,15 +50,11 @@ class Config(object):
         logger.debug('downloaded config text: {}'.format(self.__text))
         self.load()
 
-    def save(self, path=None):
+    def save_text(self, path=None):
         self.__path = path or self.__path
-        self.__text = yaml.dump(self.dict, allow_unicode=True, sort_keys=False)
-        logger.info('self.__text changed')
-        logger.debug('__text: {}'.format(self.__text))
         with open(self.__path, 'w', encoding='UTF-8') as f:
             f.write(self.__text)
             logger.info('{} saved'.format(self.__path))
-
 
     def uncomment(self):
         logger.debug('__text: {}'.format(self.__text))
@@ -147,8 +86,8 @@ if __name__ == '__main__':
     cfg = Config('yaml/config-{}.yaml'.format(time.strftime('%Y%m%d-%H%M%S')))
 
     proxy_cfg.download(os.getenv('CONFIG_URL'))
+    proxy_cfg.save_text()
     proxy_cfg.uncomment()
-    proxy_cfg.save()
     process_jiyou(proxy_cfg)
 
     cfg.update(**base_cfg.dict)
@@ -159,7 +98,8 @@ if __name__ == '__main__':
     cfg.update(Rule=rule_cfg.dict['Rule'])
 
     # TODO 把旧的config.yaml重命名为config-time.yaml
-    cfg.save(os.getenv('TARGET_PATH'))
+    cfg.dump()
+    cfg.save_text(os.getenv('TARGET_PATH'))
 
     # TODO 配置文件同步到rspi
     # TODO rspi重载clash配置
