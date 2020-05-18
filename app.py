@@ -1,7 +1,6 @@
 import requests, logging, os, yaml, time
 from pathlib import Path
 from dotenv import load_dotenv
-import venv
 
 load_dotenv(verbose=True)
 
@@ -11,7 +10,7 @@ if not log_dir.exists():
 log_path = log_dir / '{}.log'.format(time.strftime('%Y%m%d-%H%M%S'))
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 fh = logging.FileHandler(filename=log_path, mode='w', encoding='UTF-8')
 formatter = logging.Formatter('%(asctime)s - %(name)s:%(lineno)s - %(funcName)s - %(levelname)s - %(message)s')
 fh.setFormatter(formatter)
